@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+myenv/
+
+__pycache__/
+*.csv
+*.txt
+
+data/
+
+*.ipynb
+
+*.db
+*.log
+*.sqlite3
