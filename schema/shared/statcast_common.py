@@ -28,5 +28,5 @@ COMMON_PITCH_STAGING_COLUMNS: dict[str, ColumnSpec] = {
         name='batter',
         dtype='BigInteger',
         nullable=False
-    ),
+    )
 }

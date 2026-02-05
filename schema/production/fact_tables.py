@@ -86,6 +86,10 @@ FACT_PA_COLS: dict[str, ColumnSpec] = {
         name='bat_score_diff',
         dtype='SmallInteger'
     ),
+    'last_pitch_number': ColumnSpec(
+        name='last_pitch_number',
+        dtype='SmallInteger'
+    ),
     'created_at': ColumnSpec(
         name='created_at',
         dtype='TIMESTAMP(timezone=True)',
@@ -96,7 +100,8 @@ FACT_PA_COLS: dict[str, ColumnSpec] = {
 FACT_PA_SPEC = TableSpec(
     name='fact_pa',
     pk=['pa_id'],
-    columns=FACT_PA_COLS
+    columns=FACT_PA_COLS,
+    unique_constraints=[('uq_fact_pa_natural', ['game_pk', 'game_counter'])]
 )
 
 FACT_PITCH_COLS: dict[str, ColumnSpec] = {
@@ -121,6 +126,10 @@ FACT_PITCH_COLS: dict[str, ColumnSpec] = {
         name='pitcher_id',
         dtype='BigInteger',
         nullable=False
+    ),
+    'team_id': ColumnSpec(
+        name='team_id',
+        dtype='BigInteger'
     ),
     'batter_id': ColumnSpec(
         name='batter_id',
@@ -253,5 +262,6 @@ FACT_PITCH_COLS: dict[str, ColumnSpec] = {
 FACT_PITCH_SPEC = TableSpec(
     name='fact_pitch',
     pk=['pitch_id'],
-    columns=FACT_PITCH_COLS
+    columns=FACT_PITCH_COLS,
+    unique_constraints=[('uq_fact_pitch_natural', ['game_pk', 'game_counter', 'pitch_number'])]
 )

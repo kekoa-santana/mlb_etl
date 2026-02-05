@@ -1,8 +1,8 @@
-"""fix primary and constraint key
+"""change staging.pitching_boxscores columns: strike_out to strike_outs and complete_game to bool instead of smallint
 
-Revision ID: c3bdd819d2ea
-Revises: 804422e8cd2e
-Create Date: 2026-01-24 19:42:08.878130
+Revision ID: c44043547519
+Revises: fd7acfeeb82a
+Create Date: 2026-01-28 15:00:56.212837
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c3bdd819d2ea'
-down_revision: Union[str, Sequence[str], None] = '804422e8cd2e'
+revision: str = 'c44043547519'
+down_revision: Union[str, Sequence[str], None] = 'fd7acfeeb82a'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -21,7 +21,6 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     pass
-
 
 def downgrade() -> None:
     """Downgrade schema."""

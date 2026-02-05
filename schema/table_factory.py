@@ -2,6 +2,7 @@ from schema.spec_engine import TableSpec
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
 
 DTYPE_MAP = {
     'BigInteger': sa.BigInteger,
@@ -12,7 +13,8 @@ DTYPE_MAP = {
     'Float': sa.Float,
     'DATE': sa.Date,
     'DateTime': sa.DateTime,
-    'Boolean': sa.Boolean
+    'Boolean': sa.Boolean,
+    'UUID': UUID,
 }
 
 def parse_dtype(dtype: str | None):
@@ -21,6 +23,8 @@ def parse_dtype(dtype: str | None):
     if dtype.startswith('String('):
         length=int(dtype[7:-1]) # extract number from String(N)
         return sa.String(length)
+    if dtype == 'TIMESTAMP(timezone=True)':
+        return sa.TIMESTAMP(timezone=True)
     return DTYPE_MAP.get(dtype, sa.Text)()
 
 def spec_to_cols(spec: TableSpec) -> []:
@@ -40,8 +44,14 @@ def spec_to_cols(spec: TableSpec) -> []:
     return column_list
 
 def create_table_from_schema(schema: str, spec: TableSpec):
+    constraints = []
+    if spec.unique_constraints:
+        for name, columns in spec.unique_constraints:
+            constraints.append(sa.UniqueConstraint(*columns, name=name))
+
     op.create_table(
         spec.name,
         *spec_to_cols(spec),
+        *constraints,
         schema=schema
     )

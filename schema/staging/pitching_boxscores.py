@@ -68,7 +68,7 @@ BOXSCORE_COLUMNS: dict[str, ColumnSpec] = {
         bounds=(0, 40)
     ),               
     'strike_outs': ColumnSpec(
-        name='strike_out',
+        name='strike_outs',
         dtype='SmallInteger',
         bounds=(0, 40)
     ),
@@ -169,13 +169,11 @@ BOXSCORE_COLUMNS: dict[str, ColumnSpec] = {
     ),                    
     'complete_game': ColumnSpec(
         name='complete_game',
-        dtype='SmallInteger',
-        bounds=(0,1)
+        dtype='Boolean'
     ),          
     'shutout': ColumnSpec(
         name='shutout',
-        dtype='SmallInteger',
-        bounds=(0, 1)
+        dtype='Boolean'
     ),                
     'balls': ColumnSpec(
         name='balls',
@@ -219,8 +217,7 @@ BOXSCORE_COLUMNS: dict[str, ColumnSpec] = {
     ),                     
     'games_finished': ColumnSpec(
         name='games_finished',
-        dtype='SmallInteger',
-        bounds=(0, 1)
+        dtype='Boolean'
     ),         
     'runs_scored_per_9': ColumnSpec(
         name='runs_scored_per_9',

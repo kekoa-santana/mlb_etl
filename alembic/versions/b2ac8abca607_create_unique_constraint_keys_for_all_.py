@@ -20,19 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.create_unique_constraint(
-        'uq_fact_pa_natural', 
-        'fact_pa', 
-        columns=['game_pk', 'game_counter'],
-        schema='production')
-    op.create_unique_constraint(
-        'uq_fact_pitch_natural', 
-        'fact_pitch', 
-        columns=['game_pk', 'game_counter', 'pitch_number'],
-        schema='production')
+    pass
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_constraint('uq_fact_pa_natural', 'fact_pa', type_='unique', schema='production')
-    op.drop_constraint('uq_fact_pitch_natural', 'fact_pitch', type_='unique', schema='production')
+    pass

@@ -1,8 +1,9 @@
-"""fix primary and constraint key
+"""adding team_id to staging.statcast_pitches, production.fact_pitch and production.dim_team
 
-Revision ID: c3bdd819d2ea
-Revises: 804422e8cd2e
-Create Date: 2026-01-24 19:42:08.878130
+
+Revision ID: fd7acfeeb82a
+Revises: f82c2672693a
+Create Date: 2026-01-28 12:20:42.292058
 
 """
 from typing import Sequence, Union
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c3bdd819d2ea'
-down_revision: Union[str, Sequence[str], None] = '804422e8cd2e'
+revision: str = 'fd7acfeeb82a'
+down_revision: Union[str, Sequence[str], None] = 'f82c2672693a'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -21,6 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     pass
+
 
 
 def downgrade() -> None:

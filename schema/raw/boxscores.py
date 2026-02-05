@@ -283,5 +283,6 @@ LANDING_BOXSCORES_COLUMNS: dict[str, ColumnSpec] = {
 LANDING_BOXSCORES_SPEC = TableSpec(
     name='landing_boxscores',
     pk=['load_id'],
-    columns=LANDING_BOXSCORES_COLUMNS
+    columns=LANDING_BOXSCORES_COLUMNS,
+    unique_constraints=[('landing_boxscores_game_pk_unique', ['game_pk'])]
 )

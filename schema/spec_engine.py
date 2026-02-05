@@ -27,6 +27,7 @@ class TableSpec:
     columns: dict[str, ColumnSpec]
     table_rules: list[Callable[[pd.DataFrame], dict[str, int]]] | None = None
     row_filters: list[Callable[[pd.DataFrame], pd.DataFrame]] | None = None
+    unique_constraints: list[tuple[str, list[str]]] | None = None
 
 
 def _coerce_series(s: pd.Series, dtype: str) -> pd.Series:

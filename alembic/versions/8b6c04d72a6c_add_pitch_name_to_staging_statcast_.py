@@ -20,9 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.execute('ALTER TABLE staging.statcast_pitches ADD COLUMN pitch_name TEXT')
+    pass
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_column('statcast_pitches', 'pitch_name', schema='staging')
+    pass

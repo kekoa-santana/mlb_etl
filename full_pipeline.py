@@ -57,6 +57,8 @@ def main():
     # Phase control - choose which functions to run
     parser.add_argument('--skip-ingestion', action='store_true',
                         help='Skip ingestion(), when parquet already up to date')
+    parser.add_argument('--skip-staging', action='store_true',
+                        help='skip staging if you already have staging tables in postgresql db')
     parser.add_argument('--skip-production', action='store_true',
                         help='skip load_production() and production SQL')
     
@@ -70,12 +72,13 @@ def main():
     args = parser.parse_args()
 
     if args.skip_ingestion:
-        if not args.parquet:
+        if not args.parquet and not args.skip_staging:
             parser.error("--skip-ingestion requires --parquet to specify existing file")
     else:    
         parquet = ingestion(args.start_date, args.end_date, args.data_dir)
 
-    load_staging(parquet)
+    if not args.skip_staging:
+        load_staging(parquet)
 
     if not args.skip_production:
         load_production(DIM_PLAYER_PARQUET)

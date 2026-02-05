@@ -20,9 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.execute('ALTER TABLE staging.statcast_pitches ALTER COLUMN arm_angle TYPE REAL USING arm_angle::real')
+    pass
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.alter_column('statcast_pitches', 'arm_angle', type_=sa.Text, schema='staging')
+    pass

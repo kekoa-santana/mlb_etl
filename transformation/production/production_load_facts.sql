@@ -53,7 +53,7 @@ SET pitcher_id = EXCLUDED.pitcher_id,
 
 
 INSERT INTO production.fact_pitch (
-    pa_id, game_pk, pitcher_id, batter_id, game_counter, pitch_number,
+    pa_id, game_pk, pitcher_id, batter_id, game_counter, team_id, pitch_number,
     pitch_type, pitch_name, description, release_speed, effective_speed,
     release_spin_rate, release_extension, spin_axis, pfx_x, pfx_z,
     zone, plate_x, plate_z, balls, strikes, outs_when_up, bat_score_diff,
@@ -65,6 +65,7 @@ SELECT
     p.pitcher AS pitcher_id,
     p.batter AS batter_id,
     p.game_counter,
+    pb.team_id,
     p.pitch_number,
     p.pitch_type,
     p.pitch_name,
@@ -95,11 +96,15 @@ JOIN production.fact_pa pa
     AND pa.game_counter = p.game_counter
 JOIN production.dim_game g
     ON pa.game_pk = g.game_pk
+LEFT JOIN staging.pitching_boxscores pb
+    ON p.game_pk = pb.game_pk
+    AND p.pitcher = pb.pitcher_id
 WHERE g.game_type NOT IN ('E', 'S')
 ON CONFLICT (game_pk, game_counter, pitch_number) DO UPDATE
 SET pa_id = EXCLUDED.pa_id,
     pitcher_id = EXCLUDED.pitcher_id,
     batter_id = EXCLUDED.batter_id,
+    team_id = EXCLUDED.team_id,
     pitch_type = EXCLUDED.pitch_type,
     pitch_name = EXCLUDED.pitch_name,
     description = EXCLUDED.description,
