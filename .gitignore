@@ -5,7 +5,7 @@ myenv/
 
 __pycache__/
 *.csv
-*.txt
+
 
 data/
 
