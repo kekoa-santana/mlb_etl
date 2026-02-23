@@ -127,10 +127,6 @@ FACT_PITCH_COLS: dict[str, ColumnSpec] = {
         dtype='BigInteger',
         nullable=False
     ),
-    'team_id': ColumnSpec(
-        name='team_id',
-        dtype='BigInteger'
-    ),
     'batter_id': ColumnSpec(
         name='batter_id',
         dtype='BigInteger',

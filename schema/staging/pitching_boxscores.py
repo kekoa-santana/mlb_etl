@@ -283,7 +283,7 @@ BOXSCORE_COLUMNS: dict[str, ColumnSpec] = {
     )
 }
 
-STAGING_BOXSCORE_SPEC = TableSpec(
+PITCHING_BOXSCORE_SPEC = TableSpec(
     name='pitching_boxscores',
     pk=['game_pk', 'pitcher_id', 'team_id'],
     columns=BOXSCORE_COLUMNS

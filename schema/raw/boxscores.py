@@ -8,7 +8,8 @@ PITCHING_BOXSCORES_COLUMNS: dict[str, ColumnSpec] = {
     'pitcher_id': ColumnSpec(
         name='pitcher_id',
         dtype='BigInteger',
-        nullable=False
+        nullable=False,
+        primary_key=True
     ),
     'pitcher_name': ColumnSpec(
         name='pitcher_name',
@@ -16,13 +17,15 @@ PITCHING_BOXSCORES_COLUMNS: dict[str, ColumnSpec] = {
     ),
     'team_id': ColumnSpec(
         name='team_id',
-        dtype='BigInteger',
-        nullable=False
+        dtype='Integer',
+        nullable=False,
+        primary_key=True
     ),
     'game_pk': ColumnSpec(
         name='game_pk',
         dtype='BigInteger',
-        nullable=False
+        nullable=False,
+        primary_key=True
     ),
     'team_name': ColumnSpec(
         name='team_name',
@@ -244,12 +247,229 @@ PITCHING_BOXSCORES_COLUMNS: dict[str, ColumnSpec] = {
     ),
 }
 
-PITCHING_BOXSCORES_SPEC = TableSpec(
+RAW_PITCHING_BOXSCORES_SPEC = TableSpec(
     name='pitching_boxscores',
     pk=['pitcher_id', 'team_id', 'game_pk'],
     columns=PITCHING_BOXSCORES_COLUMNS
 )
 
+RAW_GAME_COLS: dict[str, ColumnSpec] = {
+    'game_pk': ColumnSpec(
+        name='game_pk',
+        dtype='BigInteger',
+        nullable=False,
+        primary_key=True
+    ),
+    'home_team_id': ColumnSpec(
+        name='home_team_id',
+        dtype='Integer',
+        nullable=False,
+        primary_key=True
+    ),
+    'away_team_id': ColumnSpec(
+        name='away_team_id',
+        dtype='Integer',
+        nullable=False,
+        primary_key=True
+    ),
+    'game_date': ColumnSpec(
+        name='game_date',
+        dtype='DATE',
+        nullable=False
+    ),
+    'game_type': ColumnSpec(
+        name='game_type',
+        dtype='Text',
+        nullable=False
+    ),
+    'season': ColumnSpec(
+        name='season',
+        dtype='Integer'
+    ),
+    'home_team_name': ColumnSpec(
+        name='home_team_name',
+        dtype='Text'
+    ),
+    'away_team_name': ColumnSpec(
+        name='away_team_name',
+        dtype='Text'
+    ),
+    'home_wins_text': ColumnSpec(
+        name='home_wins_text',
+        dtype='Text'
+    ),
+    'home_losses_text': ColumnSpec(
+        name='home_losses_text',
+        dtype='Text'
+    ),
+    'away_wins_text': ColumnSpec(
+        name='away_wins_text',
+        dtype='Text'
+    ),
+    'away_losses_text': ColumnSpec(
+        name='away_losses_text',
+        dtype='Text'
+    ),
+    'venue_id_text': ColumnSpec(
+        name='venue_id_text',
+        dtype='Text'
+    ),
+    'doubleheader_text': ColumnSpec(
+        name='doubleheader_text',
+        dtype='Text'
+    ),
+    'day_night_text': ColumnSpec(
+        name='day_night_text',
+        dtype='Text'
+    ),
+    'games_in_series_text':ColumnSpec(
+        name='games_in_series_text',
+        dtype='Text'
+    ),
+    'series_in_game_number_text': ColumnSpec(
+        name='series_in_game_number_text',
+        dtype='Text'
+    )
+}
+
+RAW_GAME_SPEC = TableSpec(
+    name='dim_game',
+    pk=['game_pk', 'home_team_id', 'away_team_id'],
+    columns=RAW_GAME_COLS
+)
+
+BATTING_BOXSCORES_COLS: dict[str, ColumnSpec] = {
+    'row_num': ColumnSpec(
+        name='row_num',
+        dtype='Integer'
+    ),
+    'batter_id': ColumnSpec(
+        name='batter_id',
+        dtype='BigInteger',
+        nullable=False,
+        primary_key=True
+    ),
+    'batter_name': ColumnSpec(
+        name='batter_name',
+        dtype='Text'
+    ),
+    'game_pk': ColumnSpec(
+        name='game_pk',
+        dtype='BigInteger',
+        nullable=False,
+        primary_key=True
+    ),
+    'team_id': ColumnSpec(
+        name='team_id',
+        dtype='Integer',
+        nullable=False,
+        primary_key=True
+    ),
+    'team_name': ColumnSpec(
+        name='team_name',
+        dtype='Text'
+    ),
+    'position': ColumnSpec(
+        name='position',
+        dtype='Text'
+    ),
+    'ground_outs_text': ColumnSpec(
+        name='ground_outs_text',
+        dtype='Text'
+    ),
+    'air_outs_text': ColumnSpec(
+        name='air_outs_text',
+        dtype='Text'
+    ),
+    'runs_text': ColumnSpec(
+        name='runs_text',
+        dtype='Text'
+    ),
+    'doubles_text': ColumnSpec(
+        name='doubles_text',
+        dtype='Text'
+    ),
+    'triples_text': ColumnSpec(
+        name='triples_text',
+        dtype='Text'
+    ),
+    'home_runs_text': ColumnSpec(
+        name='home_runs_text',
+        dtype='Text'
+    ),
+    'strikeouts_text': ColumnSpec(
+        name='strikeouts_text',
+        dtype='Text'
+    ),
+    'walks_text': ColumnSpec(
+        name='walks_text',
+        dtype='Text'
+    ),
+    'intentional_walks_text': ColumnSpec(
+        name='intentional_walks_text',
+        dtype='Text'
+    ),
+    'hits_text': ColumnSpec(
+        name='hits_text',
+        dtype='Text'
+    ),
+    'hit_by_pitch_text': ColumnSpec(
+        name='hit_by_pitch_text',
+        dtype='Text'
+    ),
+    'at_bats_text': ColumnSpec(
+        name='at_bats_text',
+        dtype='Text'
+    ),
+    'caught_stealing_text': ColumnSpec(
+        name='caught_stealing_text',
+        dtype='Text'
+    ),
+    'sb_text': ColumnSpec(
+        name='sb_text',
+        dtype='Text'
+    ),
+    'sb_pct_text': ColumnSpec(
+        name='sb_pct_text',
+        dtype='Text'
+    ),
+    'plate_appearances_text': ColumnSpec(
+        name='plate_appearances_text',
+        dtype='Text'
+    ),
+    'total_bases_text': ColumnSpec(
+        name='total_bases_text',
+        dtype='Text'
+    ),
+    'rbi_text': ColumnSpec(
+        name='rbi_text',
+        dtype='Text'
+    ),
+    'errors_text': ColumnSpec(
+        name='errors_text',
+        dtype='Text'
+    ),
+    "source": ColumnSpec(
+        name='source',
+        dtype='Text'
+    ),
+    'load_id': ColumnSpec(
+        name='load_id',
+        dtype='UUID',
+        server_default='gen_random_uuid()'
+    ),
+    'ingested_at': ColumnSpec(
+        name='ingested_at',
+        dtype='TIMESTAMP(timezone=True)',
+        server_default='now()'
+    )
+}
+
+RAW_BATTING_BOXSCORES_SPEC = TableSpec(
+    name='batting_boxscores',
+    pk=['batter_id', 'team_id', 'game_pk'],
+    columns=BATTING_BOXSCORES_COLS
+)
 
 LANDING_BOXSCORES_COLUMNS: dict[str, ColumnSpec] = {
     'load_id': ColumnSpec(

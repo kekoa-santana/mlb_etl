@@ -28,5 +28,11 @@ SQL_REGISTRY = [
         'script': 'transformation/staging/transform_pitching_boxscores.sql',
         'tables': ['staging.pitching_boxscores'],
         'depends_on': ['raw.pitching_boxscores']
+    },
+    {
+        'name': 'transform_batting_boxscores',
+        'script': 'transformation/staging/transform_batting_boxscores.sql',
+        'tables': ['staging.batting_boxscores'],
+        'depends_on': ['raw.batting_boxscores']
     }
 ]

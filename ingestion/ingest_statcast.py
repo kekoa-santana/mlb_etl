@@ -1,4 +1,4 @@
-from pybaseball import statcast_pitcher
+from pybaseball import statcast, statcast_sprint_speed
 from sqlalchemy import create_engine, text
 import pandas as pd
 import os
@@ -12,55 +12,49 @@ from utils.retry import retry_call
 
 logger = logging.getLogger(__name__)
 
-STATCAST_TIMEOUT = 45
+STATCAST_TIMEOUT = 90
 STATCAST_MAX_RETRIES = 3
 STATCAST_BACKOFF_FACTOR = 1.5
 
-engine = create_engine(build_db_url(), pool_pre_ping=False)
+engine = create_engine(build_db_url(database='mlb_fantasy'), pool_pre_ping=False)
 
-def get_pitcher_ids() -> []:
-    query = text("SELECT DISTINCT pitcher_id FROM raw.pitching_boxscores")
+def extract_statcast(start_date, end_date) -> pd.DataFrame:
+    # Fetch league wide statcast data (batters + pitchers)
+    df = retry_call(
+        statcast,
+        args=(start_date, end_date),
+        max_retries=STATCAST_MAX_RETRIES,
+        timeout=STATCAST_TIMEOUT,
+        label=f'statcast {start_date} to {end_date}'
+    )
 
-    with engine.begin() as conn:
-        result = conn.execute(query)
-        pitcher_ids = [row[0] for row in result]
+    if df is None or df.empty:
+        logger.warning(f"No Statcast data returned for {start_date} to {end_date}")
+        return pd.DataFrame()
 
-    return pitcher_ids
+    return df
 
-def extract_statcast(pitcher_ids, start_date: str, end_date: str) -> pd.DataFrame:
-    frames = []
-    failed_ids = []
+def extract_sprint_speed(year, attempts=50):
+    df = retry_call(
+        statcast_sprint_speed,
+        args=(year, attempts),
+        max_retries=2,
+        timeout=30,
+        label=f'statcast_sprint_speed_{year}'
+    )
 
-    for i, pitcher_id in enumerate(pitcher_ids, 1):
-        try:
-            df = retry_call(
-                statcast_pitcher,
-                args=(start_date, end_date, pitcher_id),
-                max_retries=STATCAST_MAX_RETRIES,
-                backoff_factor=STATCAST_BACKOFF_FACTOR,
-                timeout=STATCAST_TIMEOUT,
-                label=f"pitcher {pitcher_id} [{i}/{len(pitcher_ids)}]"
-            )
-            if df is not None and not df.empty:
-                frames.append(df)
-        except Exception as exc:
-            failed_ids.append(pitcher_id)
-            logger.error(f'Skipping pitcher {pitcher_id} affter all retries: {exc}')
-            continue
-    
-    if failed_ids:
-        logger.warning(
-            f"Statcast extraction: {len(failed_ids)}/{len(pitcher_ids)} failures: {failed_ids}"
-        )
+    if df is None or df.empty:
+        logger.warning(f'No statcast sprint speed data for {year}')
+        return pd.DataFrame()
 
-    return pd.concat(frames, ignore_index=True)
+    return df
 
 def write_and_register_parquet(
     df: pd.DataFrame,
     start_date: str,
     end_date: str,
     query_params:dict,
-    base_folder: str = "E:/data_analytics/dodgers_pitching/data/"
+    base_folder: str = "E:/data_analytics/mlb_pipeline/data/"
 ) -> str:
     os.makedirs(base_folder, exist_ok=True)
 
@@ -112,7 +106,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DATA_DIR = os.path.join(BASE_DIR, 'data')
 
 
-def extract_and_save_statcast(start_date: str, end_date: str, data_dir: str = None, engine=None) -> str:
+def extract_and_save_statcast(years: list, start_date: str, end_date: str, data_dir: str = None, engine=None) -> str:
     """
     Callable entry point for pipeline - extracts statcast data and saves to parquet.
 
@@ -128,34 +122,24 @@ def extract_and_save_statcast(start_date: str, end_date: str, data_dir: str = No
     if data_dir is None:
         data_dir = DEFAULT_DATA_DIR
 
-    print(f"Getting pitcher IDs from raw.pitching_boxscores...")
-    pitcher_ids = get_pitcher_ids()
-    print(f"Found {len(pitcher_ids)} pitchers")
-
     print(f"Extracting statcast data from {start_date} to {end_date}...")
-    df = extract_statcast(pitcher_ids, start_date, end_date)
+    df = extract_statcast(start_date, end_date)
     print(f"Extracted {len(df)} pitch records")
+
+    df_run = pd.DataFrame()
+    for year in years:
+        df_year = extract_sprint_speed(year)
+        df_run.concat(df_year)
+    if not df_run.empty:
+        df_run.to_parquet('data/sprint_speed.parquet')
 
     query_params = {
         "type": "statcast_pitcher",
         "start_date": start_date,
-        "end_date": end_date,
-        "pitcher_ids": pitcher_ids
+        "end_date": end_date
     }
 
     file_path = write_and_register_parquet(df, start_date, end_date, query_params, data_dir)
     print(f"Saved parquet to: {file_path}")
 
     return file_path
-
-
-def main():
-    START_DATE = "2025-03-18"
-    END_DATE = "2025-11-01"
-
-    file_path = extract_and_save_statcast(START_DATE, END_DATE)
-    print(file_path)
-
-
-if __name__ == "__main__":
-    main()
