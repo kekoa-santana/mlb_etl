@@ -261,3 +261,228 @@ FACT_PITCH_SPEC = TableSpec(
     columns=FACT_PITCH_COLS,
     unique_constraints=[('uq_fact_pitch_natural', ['game_pk', 'game_counter', 'pitch_number'])]
 )
+
+
+# ── fact_lineup ──────────────────────────────────────────────────────
+
+FACT_LINEUP_COLS: dict[str, ColumnSpec] = {
+    'game_pk': ColumnSpec(
+        name='game_pk',
+        dtype='BigInteger',
+        nullable=False,
+    ),
+    'player_id': ColumnSpec(
+        name='player_id',
+        dtype='BigInteger',
+        nullable=False,
+    ),
+    'team_id': ColumnSpec(
+        name='team_id',
+        dtype='Integer',
+        nullable=False,
+    ),
+    'batting_order': ColumnSpec(
+        name='batting_order',
+        dtype='SmallInteger',
+        nullable=False,
+        bounds=(1, 9),
+    ),
+    'is_starter': ColumnSpec(
+        name='is_starter',
+        dtype='Boolean',
+        nullable=False,
+    ),
+    'position': ColumnSpec(
+        name='position',
+        dtype='String(4)',
+    ),
+    'home_away': ColumnSpec(
+        name='home_away',
+        dtype='String(4)',
+    ),
+    'season': ColumnSpec(
+        name='season',
+        dtype='Integer',
+    ),
+    'created_at': ColumnSpec(
+        name='created_at',
+        dtype='TIMESTAMP(timezone=True)',
+        server_default='now()',
+    ),
+}
+
+FACT_LINEUP_SPEC = TableSpec(
+    name='fact_lineup',
+    pk=['game_pk', 'player_id'],
+    columns=FACT_LINEUP_COLS,
+)
+
+
+# ── dim_weather ─────────────────────────────────────────────────────
+
+DIM_WEATHER_COLS: dict[str, ColumnSpec] = {
+    'game_pk': ColumnSpec(
+        name='game_pk',
+        dtype='BigInteger',
+        nullable=False,
+    ),
+    'temperature': ColumnSpec(
+        name='temperature',
+        dtype='SmallInteger',
+        bounds=(0, 130),
+    ),
+    'condition': ColumnSpec(
+        name='condition',
+        dtype='String(20)',
+    ),
+    'is_dome': ColumnSpec(
+        name='is_dome',
+        dtype='Boolean',
+    ),
+    'wind_speed': ColumnSpec(
+        name='wind_speed',
+        dtype='SmallInteger',
+        bounds=(0, 60),
+    ),
+    'wind_direction': ColumnSpec(
+        name='wind_direction',
+        dtype='String(20)',
+    ),
+    'wind_category': ColumnSpec(
+        name='wind_category',
+        dtype='String(5)',
+    ),
+    'created_at': ColumnSpec(
+        name='created_at',
+        dtype='TIMESTAMP(timezone=True)',
+        server_default='now()',
+    ),
+}
+
+DIM_WEATHER_SPEC = TableSpec(
+    name='dim_weather',
+    pk=['game_pk'],
+    columns=DIM_WEATHER_COLS,
+)
+
+
+# ── dim_park_factor ─────────────────────────────────────────────────
+
+DIM_PARK_FACTOR_COLS: dict[str, ColumnSpec] = {
+    'venue_id': ColumnSpec(
+        name='venue_id',
+        dtype='Integer',
+        nullable=False,
+    ),
+    'season': ColumnSpec(
+        name='season',
+        dtype='Integer',
+        nullable=False,
+    ),
+    'batter_stand': ColumnSpec(
+        name='batter_stand',
+        dtype='String(1)',
+        nullable=False,
+    ),
+    'venue_name': ColumnSpec(
+        name='venue_name',
+        dtype='Text',
+    ),
+    'hr_pf_season': ColumnSpec(
+        name='hr_pf_season',
+        dtype='REAL',
+    ),
+    'pa_season': ColumnSpec(
+        name='pa_season',
+        dtype='Integer',
+    ),
+    'hr_season': ColumnSpec(
+        name='hr_season',
+        dtype='Integer',
+    ),
+    'hr_pf_3yr': ColumnSpec(
+        name='hr_pf_3yr',
+        dtype='REAL',
+    ),
+    'pa_3yr': ColumnSpec(
+        name='pa_3yr',
+        dtype='Integer',
+    ),
+    'hr_3yr': ColumnSpec(
+        name='hr_3yr',
+        dtype='Integer',
+    ),
+    'created_at': ColumnSpec(
+        name='created_at',
+        dtype='TIMESTAMP(timezone=True)',
+        server_default='now()',
+    ),
+}
+
+DIM_PARK_FACTOR_SPEC = TableSpec(
+    name='dim_park_factor',
+    pk=['venue_id', 'season', 'batter_stand'],
+    columns=DIM_PARK_FACTOR_COLS,
+)
+
+
+# ── dim_umpire ──────────────────────────────────────────────────────
+
+DIM_UMPIRE_COLS: dict[str, ColumnSpec] = {
+    'game_pk': ColumnSpec(
+        name='game_pk',
+        dtype='BigInteger',
+        nullable=False,
+    ),
+    'hp_umpire_name': ColumnSpec(
+        name='hp_umpire_name',
+        dtype='Text',
+    ),
+    'created_at': ColumnSpec(
+        name='created_at',
+        dtype='TIMESTAMP(timezone=True)',
+        server_default='now()',
+    ),
+}
+
+DIM_UMPIRE_SPEC = TableSpec(
+    name='dim_umpire',
+    pk=['game_pk'],
+    columns=DIM_UMPIRE_COLS,
+)
+
+
+# ── fact_game_totals ────────────────────────────────────────────────
+
+FACT_GAME_TOTALS_COLS: dict[str, ColumnSpec] = {
+    'game_pk': ColumnSpec(name='game_pk', dtype='BigInteger', nullable=False),
+    'team_id': ColumnSpec(name='team_id', dtype='Integer', nullable=False),
+    'season': ColumnSpec(name='season', dtype='Integer'),
+    'home_away': ColumnSpec(name='home_away', dtype='String(4)'),
+    'runs': ColumnSpec(name='runs', dtype='Integer'),
+    'hits': ColumnSpec(name='hits', dtype='Integer'),
+    'doubles': ColumnSpec(name='doubles', dtype='Integer'),
+    'triples': ColumnSpec(name='triples', dtype='Integer'),
+    'home_runs': ColumnSpec(name='home_runs', dtype='Integer'),
+    'walks': ColumnSpec(name='walks', dtype='Integer'),
+    'strikeouts': ColumnSpec(name='strikeouts', dtype='Integer'),
+    'hit_by_pitch': ColumnSpec(name='hit_by_pitch', dtype='Integer'),
+    'sb': ColumnSpec(name='sb', dtype='Integer'),
+    'caught_stealing': ColumnSpec(name='caught_stealing', dtype='Integer'),
+    'at_bats': ColumnSpec(name='at_bats', dtype='Integer'),
+    'plate_appearances': ColumnSpec(name='plate_appearances', dtype='Integer'),
+    'total_bases': ColumnSpec(name='total_bases', dtype='Integer'),
+    'rbi': ColumnSpec(name='rbi', dtype='Integer'),
+    'errors': ColumnSpec(name='errors', dtype='Integer'),
+    'created_at': ColumnSpec(
+        name='created_at',
+        dtype='TIMESTAMP(timezone=True)',
+        server_default='now()',
+    ),
+}
+
+FACT_GAME_TOTALS_SPEC = TableSpec(
+    name='fact_game_totals',
+    pk=['game_pk', 'team_id'],
+    columns=FACT_GAME_TOTALS_COLS,
+)

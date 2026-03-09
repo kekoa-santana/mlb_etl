@@ -119,7 +119,7 @@ BOXSCORE_COLUMNS: dict[str, ColumnSpec] = {
     ),       
     'innings_pitched': ColumnSpec(
         name='innings_pitched',
-        dtype='SmallInteger',
+        dtype='REAL',
         bounds=(1, 12)
     ),         
     'wins': ColumnSpec(

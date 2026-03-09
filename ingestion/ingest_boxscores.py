@@ -48,29 +48,28 @@ def _fetch_game_table(start_date: str, end_date: str):
 
             venue = game.get('venue')
 
-            if game.get("gameType", " ").lower() != "s":
-                game_pk = game.get("gamePk")
-                rows.append({
-                    'game_date': day.get('date'),
-                    'game_pk': game_pk,
-                    'game_type': game.get('gameType'),
-                    'season': game.get('season'),
-                    'home_team_id': home_team.get('id'),
-                    'home_team_name': home_team.get('name'),
-                    'away_team_id': away_team.get('id'),
-                    'away_team_name': away_team.get('name'),
-                    'home_wins_text': home_record.get('wins'),
-                    'home_losses_text': home_record.get('losses'),
-                    'away_wins_text': away_record.get('wins'),
-                    'away_losses_text': away_record.get('losses'),
-                    'venue_id_text': venue.get('id'),
-                    'doubleheader_text': game.get('doubleheader'),
-                    'day_night_text': game.get('dayNight'),
-                    'games_in_series_text': game.get('gamesInSeries'),
-                    'series_in_game_number_text': game.get('seriesGameNumber')
-                })
-                if game_pk not in game_pks:
-                    game_pks.append(game_pk)
+            game_pk = game.get("gamePk")
+            rows.append({
+                'game_date': pd.to_datetime(day.get('date')).date(),
+                'game_pk': game_pk,
+                'game_type': game.get('gameType'),
+                'season': int(game.get('season')),
+                'home_team_id': home_team.get('id'),
+                'home_team_name': home_team.get('name'),
+                'away_team_id': away_team.get('id'),
+                'away_team_name': away_team.get('name'),
+                'home_wins_text': home_record.get('wins'),
+                'home_losses_text': home_record.get('losses'),
+                'away_wins_text': away_record.get('wins'),
+                'away_losses_text': away_record.get('losses'),
+                'venue_id_text': venue.get('id'),
+                'doubleheader_text': game.get('doubleheader'),
+                'day_night_text': game.get('dayNight'),
+                'games_in_series_text': game.get('gamesInSeries'),
+                'series_in_game_number_text': game.get('seriesGameNumber')
+            })
+            if game_pk not in game_pks:
+                game_pks.append(game_pk)
 
     return game_pks, pd.DataFrame(rows)
 
@@ -232,17 +231,23 @@ def fetch_boxscores(game_pks: list) -> list:
         
     return pitching_rows, batting_rows
 
-def load_to_psql(df: pd.DataFrame, table_name: str):
+def load_to_psql(df: pd.DataFrame, table_name: str, on_conflict: str = 'append'):
     with engine.begin() as conn:
-        df.to_sql(
-            table_name,
-            conn,
-            schema = 'raw',
-            if_exists = 'append',
-            index = False,
-            method="multi",
-            chunksize=50
-        )
+        if on_conflict == 'do_nothing':
+            from sqlalchemy.dialects.postgresql import insert as pg_insert
+            for chunk_start in range(0, len(df), 50):
+                chunk = df.iloc[chunk_start:chunk_start + 50]
+                stmt = pg_insert(
+                    Table(table_name, MetaData(), autoload_with=conn, schema='raw')
+                ).values(chunk.to_dict(orient='records'))
+                stmt = stmt.on_conflict_do_nothing()
+                conn.execute(stmt)
+        else:
+            df.to_sql(
+                table_name, conn, schema='raw',
+                if_exists='append', index=False,
+                method="multi", chunksize=50
+            )
 
 
 def fetch_and_load_boxscores(start_date: str, end_date: str):
@@ -250,7 +255,7 @@ def fetch_and_load_boxscores(start_date: str, end_date: str):
 
     game_pks, dim_game_df = _fetch_game_table(start_date, end_date)
     if not dim_game_df.empty:
-        load_to_psql(dim_game_df, 'dim_game')
+        load_to_psql(dim_game_df, 'dim_game', on_conflict='do_nothing')
     else:
         print('No dim_game dataframe to load')
 
@@ -260,12 +265,12 @@ def fetch_and_load_boxscores(start_date: str, end_date: str):
 
     if len(pitching_boxscore) > 0:
         df_pitch = pd.DataFrame(pitching_boxscore)
-        load_to_psql(df_pitch, 'pitching_boxscores')
+        load_to_psql(df_pitch, 'pitching_boxscores', on_conflict='do_nothing')
     else:
         print('No pitching boxscores to load')
     
     if len(batting_boxscore) > 0:
         df_bat = pd.DataFrame(batting_boxscore)
-        load_to_psql(df_bat, 'batting_boxscores')
+        load_to_psql(df_bat, 'batting_boxscores', on_conflict='do_nothing')
     else:
         print('No batting boxscores to load')

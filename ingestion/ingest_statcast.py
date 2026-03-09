@@ -12,7 +12,7 @@ from utils.retry import retry_call
 
 logger = logging.getLogger(__name__)
 
-STATCAST_TIMEOUT = 90
+STATCAST_TIMEOUT = 360
 STATCAST_MAX_RETRIES = 3
 STATCAST_BACKOFF_FACTOR = 1.5
 
@@ -46,7 +46,8 @@ def extract_sprint_speed(year, attempts=50):
     if df is None or df.empty:
         logger.warning(f'No statcast sprint speed data for {year}')
         return pd.DataFrame()
-
+    
+    df['season'] = year
     return df
 
 def write_and_register_parquet(
@@ -106,7 +107,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DATA_DIR = os.path.join(BASE_DIR, 'data')
 
 
-def extract_and_save_statcast(years: list, start_date: str, end_date: str, data_dir: str = None, engine=None) -> str:
+def extract_and_save_statcast(start_date: str, end_date: str, data_dir: str = None, engine=None) -> tuple:
     """
     Callable entry point for pipeline - extracts statcast data and saves to parquet.
 
@@ -126,12 +127,22 @@ def extract_and_save_statcast(years: list, start_date: str, end_date: str, data_
     df = extract_statcast(start_date, end_date)
     print(f"Extracted {len(df)} pitch records")
 
-    df_run = pd.DataFrame()
+    # Extract years for sprint speed
+    start_year = int(start_date[:4])
+    end_year = int(end_date[:4])
+    years = range(start_year, end_year + 1)
+
+    frames = []
     for year in years:
         df_year = extract_sprint_speed(year)
-        df_run.concat(df_year)
-    if not df_run.empty:
-        df_run.to_parquet('data/sprint_speed.parquet')
+        if not df_year.empty:
+            frames.append(df_year)
+        
+    sprint_path=None
+    if frames:
+        df_run = pd.concat(frames, ignore_index=True)
+        sprint_path = os.path.join(data_dir, 'sprint_speed.parquet')
+        df_run.to_parquet(sprint_path, index=False)
 
     query_params = {
         "type": "statcast_pitcher",
@@ -142,4 +153,4 @@ def extract_and_save_statcast(years: list, start_date: str, end_date: str, data_
     file_path = write_and_register_parquet(df, start_date, end_date, query_params, data_dir)
     print(f"Saved parquet to: {file_path}")
 
-    return file_path
+    return file_path, sprint_path

@@ -7,8 +7,8 @@ DIM_PLAYER_COLS: dict[str, ColumnSpec] = {
         nullable=False,
         primary_key = True
     ),
-    'full_name': ColumnSpec(
-        name='full_name',
+    'player_name': ColumnSpec(
+        name='player_name',
         dtype='Text',
         nullable=False
     ),
@@ -141,17 +141,72 @@ DIM_GAME_COLS: dict[str, ColumnSpec] = {
         dtype='DATE',
         nullable=False
     ),
+    'home_team_id': ColumnSpec(
+        name='home_team_id',
+        dtype='Integer',
+        nullable=False
+    ),
+    'away_team_id': ColumnSpec(
+        name='away_team_id',
+        dtype='Integer',
+        nullable=False
+    ),
+    'home_team_name': ColumnSpec(
+        name='home_team_name',
+        dtype='Text'
+    ),
+    'away_team_name': ColumnSpec(
+        name='away_team_name',
+        dtype='Text'
+    ),
     'game_type': ColumnSpec(
         name='game_type',
         dtype='Text'
     ),
-    'home_team': ColumnSpec(
-        name='home_team',
-        dtype='Text'
+    'season': ColumnSpec(
+        name='season',
+        dtype='Integer',
+        bounds=(1940, 2035)
     ),
-    'away_team': ColumnSpec(
-        name='away_team',
-        dtype='Text'
+    'home_team_wins': ColumnSpec(
+        name='home_wins',
+        dtype='SmallInteger',
+        bounds=(0, 162)
+    ),
+    'home_team_losses': ColumnSpec(
+        name='home_losses',
+        dtype='SmallInteger',
+        bounds=(0, 162)
+    ),
+    'away_team_wins': ColumnSpec(
+        name='away_wins',
+        dtype='SmallInteger',
+        bounds=(0, 162)
+    ),
+    'away_team_losses': ColumnSpec(
+        name='away_losses',
+        dtype='SmallInteger',
+        bounds=(0, 162)
+    ),
+    'venue_id': ColumnSpec(
+        name='venue_id',
+        dtype='Integer'
+    ),
+    'doubleheader': ColumnSpec(
+        name='doubleheader',
+        dtype='VARCHAR(3)'
+    ),
+    'day_night': ColumnSpec(
+        name='day_night',
+        dtype='VARCHAR(10)'
+    ),
+    'games_in_series': ColumnSpec(
+        name='games_in_series',
+        dtype='SmallInteger'
+    ),
+    'series_in_game_number': ColumnSpec(
+        name='series_in_game_number',
+        dtype='SmallInteger'
     )
 }
 

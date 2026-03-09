@@ -40,9 +40,9 @@ SELECT
 FROM (
     SELECT DISTINCT ON (batter_id, game_pk, team_id) *
     FROM raw.batting_boxscores
-    ORDER BY batter_id, game_pk, ingested_at
+    ORDER BY batter_id, game_pk, team_id, ingested_at DESC
 ) as r
-ON CONFLICT ON CONSTRAINT batting_boxscores_pkey UPDATE staging.batting_boxscores (
+ON CONFLICT ON CONSTRAINT batting_boxscores_pkey DO UPDATE SET
     team_name= EXCLUDED.team_name,
     batter_name = EXCLUDED.batter_name,
     position = EXCLUDED.position,
@@ -52,7 +52,7 @@ ON CONFLICT ON CONSTRAINT batting_boxscores_pkey UPDATE staging.batting_boxscore
     doubles = EXCLUDED.doubles,
     triples = EXCLUDED.triples,
     home_runs = EXCLUDED.home_runs,
-    strike_outs = EXCLUDED.strike_outs,
+    strikeouts = EXCLUDED.strikeouts,
     walks = EXCLUDED.walks,
     intentional_walks = EXCLUDED.intentional_walks,
     hits = EXCLUDED.hits,
@@ -61,11 +61,10 @@ ON CONFLICT ON CONSTRAINT batting_boxscores_pkey UPDATE staging.batting_boxscore
     caught_stealing = EXCLUDED.caught_stealing,
     sb = EXCLUDED.sb,
     sb_pct = EXCLUDED.sb_pct,
-    plate_appeances = EXCLUDED.plate_appearances,
+    plate_appearances = EXCLUDED.plate_appearances,
     total_bases = EXCLUDED.total_bases,
     rbi = EXCLUDED.rbi,
     errors = EXCLUDED.errors,
     source = EXCLUDED.source,
     load_id = EXCLUDED.load_id,
     ingested_at = EXCLUDED.ingested_at
-)

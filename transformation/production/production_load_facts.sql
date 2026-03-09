@@ -48,7 +48,7 @@ SET pitcher_id = EXCLUDED.pitcher_id,
     events = EXCLUDED.events,
     bat_score = EXCLUDED.bat_score,
     fld_score = EXCLUDED.fld_score,
-    post_bat_score = EXCLUDED.fld_score,
+    post_bat_score = EXCLUDED.post_bat_score,
     bat_score_diff = EXCLUDED.bat_score_diff;
 
 

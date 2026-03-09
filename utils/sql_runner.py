@@ -3,6 +3,7 @@ import os
 import logging
 from sqlalchemy import create_engine, text
 from utils.utils import build_db_url
+from transformation.production.sql_registry import SQL_REGISTRY
 
 logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +21,7 @@ def run_sql_file(script_path: str, engine=None) -> int:
         Number of rows affected (or 0 if not available)
     """
     if engine is None:
-        engine = create_engine(build_db_url())
+        engine = create_engine(build_db_url(database='mlb_fantasy'))
 
     full_path = os.path.join(BASE_DIR, script_path)
 
@@ -49,7 +50,7 @@ def run_sql_registry(registry: list, engine=None) -> dict:
         Dict mapping script names to results with 'status' and 'rows'/'error'
     """
     if engine is None:
-        engine = create_engine(build_db_url())
+        engine = create_engine(build_db_url(database='mlb_fantasy'))
 
     results = {}
     for entry in registry:
@@ -63,3 +64,6 @@ def run_sql_registry(registry: list, engine=None) -> dict:
             results[name] = {'status': 'error', 'error': str(e)}
             raise
     return results
+
+if __name__ == '__main__':
+    run_sql_registry(SQL_REGISTRY)

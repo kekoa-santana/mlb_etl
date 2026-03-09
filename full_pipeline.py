@@ -31,18 +31,19 @@ def ingestion(start_date: str, end_date: str, data_dir: str) -> str:
     with engine.begin() as conn:
         team_ids = fetch_team_dim()
 
-        fetch_and_load_boxscores(start_date, end_date, team_ids = None, engine=engine)
+        fetch_and_load_boxscores(start_date, end_date)
         return extract_and_save_statcast(start_date, end_date, data_dir=data_dir, engine=engine)
         
 
-def load_staging(parquet: str):
+def load_staging(parquet: str, sprint_parquet: str = None):
     load_table('statcast_pitches', parquet)
     load_table('statcast_at_bats', parquet)
     load_table('statcast_batted_balls', parquet)
+    if sprint_parquet:
+        load_table('statcast_sprint_speed', sprint_parquet)
 
 def load_production(parquet: str): 
     extract_and_save_dim_player(parquet)
-    load_table('dim_game')
     load_table('dim_player', parquet)
     run_sql_registry(SQL_REGISTRY)
 
@@ -75,10 +76,10 @@ def main():
         if not args.parquet and not args.skip_staging:
             parser.error("--skip-ingestion requires --parquet to specify existing file")
     else:    
-        parquet = ingestion(args.start_date, args.end_date, args.data_dir)
+        statcast_parquet, sprint_parquet = ingestion(args.start_date, args.end_date, args.data_dir)
 
     if not args.skip_staging:
-        load_staging(parquet)
+        load_staging(statcast_parquet, sprint_parquet)
 
     if not args.skip_production:
         load_production(DIM_PLAYER_PARQUET)

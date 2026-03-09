@@ -21,7 +21,7 @@ BATTING_COLS: dict[str, ColumnSpec] = {
     ),
     'batter_name': ColumnSpec(
         name='batter_name',
-        dtpye='Text'
+        dtype='Text'
     ),
     'team_name': ColumnSpec(
         name='team_name',
@@ -62,7 +62,7 @@ BATTING_COLS: dict[str, ColumnSpec] = {
         bounds=(0, 6)
     ),
     'strikeouts': ColumnSpec(
-        name='strikeout',
+        name='strikeouts',
         dtype='SmallInteger',
         bounds=(0, 8)
     ),
@@ -134,10 +134,10 @@ BATTING_COLS: dict[str, ColumnSpec] = {
     'load_id': ColumnSpec(
         name='load_id',
         dtype='UUID',
-        server_default='get_random_uuid()'
+        server_default='gen_random_uuid()'
     ),
     'ingested_at': ColumnSpec(
-        name='UUID',
+        name='ingested_at',
         dtype='TIMESTAMP(timezone=True)',
         server_default='now()'
     )

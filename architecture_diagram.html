@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLB Fantasy ETL Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0a0e1a;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    width: 1200px;
+    background: linear-gradient(135deg, #0f1729 0%, #1a1f3a 100%);
+    border-radius: 20px;
+    padding: 48px;
+    border: 1px solid rgba(99, 132, 255, 0.15);
+    box-shadow: 0 0 80px rgba(59, 82, 187, 0.08);
+  }
+  .title {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #7c9aff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Flow layout */
+  .pipeline {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  /* Column (layer) */
+  .layer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .layer-header {
+    text-align: center;
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* Source layer */
+  .source .layer-header { background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25); }
+  .source .card { border-color: rgba(234, 179, 8, 0.2); }
+  .source .card:hover { border-color: rgba(234, 179, 8, 0.5); box-shadow: 0 0 20px rgba(234, 179, 8, 0.08); }
+  .source .card-icon { color: #facc15; }
+
+  /* Raw layer */
+  .raw .layer-header { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
+  .raw .card { border-color: rgba(239, 68, 68, 0.18); }
+  .raw .card:hover { border-color: rgba(239, 68, 68, 0.45); box-shadow: 0 0 20px rgba(239, 68, 68, 0.08); }
+  .raw .card-icon { color: #f87171; }
+
+  /* Staging layer */
+  .staging .layer-header { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
+  .staging .card { border-color: rgba(59, 130, 246, 0.18); }
+  .staging .card:hover { border-color: rgba(59, 130, 246, 0.45); box-shadow: 0 0 20px rgba(59, 130, 246, 0.08); }
+  .staging .card-icon { color: #60a5fa; }
+
+  /* Production layer */
+  .production .layer-header { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+  .production .card { border-color: rgba(16, 185, 129, 0.18); }
+  .production .card:hover { border-color: rgba(16, 185, 129, 0.45); box-shadow: 0 0 20px rgba(16, 185, 129, 0.08); }
+  .production .card-icon { color: #34d399; }
+
+  /* Fantasy layer */
+  .fantasy .layer-header { background: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25); }
+  .fantasy .card { border-color: rgba(168, 85, 247, 0.18); }
+  .fantasy .card:hover { border-color: rgba(168, 85, 247, 0.45); box-shadow: 0 0 20px rgba(168, 85, 247, 0.08); }
+  .fantasy .card-icon { color: #c084fc; }
+
+  .card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid;
+    border-radius: 10px;
+    padding: 14px 12px;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-icon { font-size: 14px; }
+  .card-detail {
+    font-size: 10.5px;
+    color: #64748b;
+    line-height: 1.45;
+  }
+  .card-rows {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    color: #94a3b8;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Arrows between columns */
+  .arrow-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 32px;
+    gap: 4px;
+  }
+  .arrow-col svg { opacity: 0.35; }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(99, 132, 255, 0.1);
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #7c9aff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* Tech stack */
+  .tech {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .tech-tag {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: rgba(99, 132, 255, 0.08);
+    border: 1px solid rgba(99, 132, 255, 0.15);
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .byline {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 11px;
+    color: #475569;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="title">MLB Fantasy ETL Pipeline</div>
+  <div class="subtitle">Data Warehouse Architecture &middot; 2018–2026 Seasons</div>
+
+  <div class="pipeline">
+    <!-- SOURCES -->
+    <div class="layer source" style="flex: 0.8;">
+      <div class="layer-header">Sources</div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#9918;</span> MLB Stats API</div>
+        <div class="card-detail">Schedule, boxscores, rosters, team & player data</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#127919;</span> Baseball Savant</div>
+        <div class="card-detail">Pitch-level Statcast via pybaseball</div>
+      </div>
+    </div>
+
+    <div class="arrow-col">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- RAW -->
+    <div class="layer raw">
+      <div class="layer-header">Raw</div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128230;</span> landing_boxscores</div>
+        <div class="card-detail">Full JSON payloads</div>
+        <div class="card-rows">19.5K games</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128230;</span> batting_boxscores</div>
+        <div class="card-detail">Batter stats (text cols)</div>
+        <div class="card-rows">458K rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128230;</span> pitching_boxscores</div>
+        <div class="card-detail">Pitcher stats (text cols)</div>
+        <div class="card-rows">173K rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128230;</span> statcast_files</div>
+        <div class="card-detail">Parquet registry + schema hashes</div>
+      </div>
+    </div>
+
+    <div class="arrow-col">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- STAGING -->
+    <div class="layer staging">
+      <div class="layer-header">Staging</div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128295;</span> statcast_pitches</div>
+        <div class="card-detail">Cleaned & typed pitch data</div>
+        <div class="card-rows">5.6M rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128295;</span> statcast_at_bats</div>
+        <div class="card-detail">PA-level aggregation</div>
+        <div class="card-rows">1.5M rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128295;</span> statcast_batted_balls</div>
+        <div class="card-detail">Batted ball + expected stats</div>
+        <div class="card-rows">985K rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#128295;</span> boxscores (bat + pitch)</div>
+        <div class="card-detail">Type-cast from raw</div>
+        <div class="card-rows">631K rows</div>
+      </div>
+    </div>
+
+    <div class="arrow-col">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- PRODUCTION -->
+    <div class="layer production">
+      <div class="layer-header">Production</div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#9733;</span> fact_pitch</div>
+        <div class="card-detail">Every pitch + physics satellite</div>
+        <div class="card-rows">5.4M rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#9733;</span> fact_pa</div>
+        <div class="card-detail">Plate appearances + batted balls</div>
+        <div class="card-rows">1.4M rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#9733;</span> Dimensions</div>
+        <div class="card-detail">game · player · team · weather · umpire · park factor</div>
+        <div class="card-rows">6 dim tables</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#9733;</span> Views</div>
+        <div class="card-detail">Pitch shape features, arsenal profiles, game-level profiles</div>
+      </div>
+    </div>
+
+    <div class="arrow-col">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- FANTASY -->
+    <div class="layer fantasy" style="flex: 0.75;">
+      <div class="layer-header">Fantasy</div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#127942;</span> DraftKings</div>
+        <div class="card-detail">Batter + pitcher game scores</div>
+        <div class="card-rows">631K rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-icon">&#127942;</span> ESPN</div>
+        <div class="card-detail">Batter + pitcher game scores</div>
+        <div class="card-rows">631K rows</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">5.4M</div>
+      <div class="stat-label">Pitches</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">1.4M</div>
+      <div class="stat-label">Plate Appearances</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">19.5K</div>
+      <div class="stat-label">Games</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">8</div>
+      <div class="stat-label">Seasons</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">25+</div>
+      <div class="stat-label">Tables</div>
+    </div>
+  </div>
+
+  <!-- Tech stack -->
+  <div class="tech">
+    <span class="tech-tag">Python</span>
+    <span class="tech-tag">PostgreSQL</span>
+    <span class="tech-tag">SQLAlchemy</span>
+    <span class="tech-tag">pandas</span>
+    <span class="tech-tag">Alembic</span>
+    <span class="tech-tag">pybaseball</span>
+    <span class="tech-tag">MLB Stats API</span>
+  </div>
+
+  <div class="byline">Built by Koa &middot; Architecture by hand &middot; Daily automated ingestion for 2026 season</div>
+</div>
+</body>
+</html>

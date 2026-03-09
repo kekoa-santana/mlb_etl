@@ -11,7 +11,7 @@ session = build_retry_session(timeout=15)
 def extract_and_save_dim_player(parquet_path: str):
     players_url = 'https://statsapi.mlb.com/api/v1/sports/1/players'
 
-    engine = create_engine(build_db_url())
+    engine = create_engine(build_db_url(database='mlb_fantasy'))
 
     sql_query = '''
         SELECT DISTINCT pitcher AS player_id
@@ -67,7 +67,7 @@ def extract_and_save_dim_player(parquet_path: str):
 
         player_list.append({
             'player_id': player.get('id'),
-            'full_name': player.get('fullName'),
+            'player_name': player.get('fullName'),
             'team_id': current_team.get('id'),
             'first_name': player.get('useName'),
             'last_name': player.get('useLastName'),

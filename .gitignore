@@ -1,16 +1,39 @@
+# Environment & secrets
 .env
 .env.*
 !.env.example
-myenv/
 
+# Python
 __pycache__/
-*.csv
+*.pyc
+*.pyo
+myenv/
+venv/
+.venv/
 
-
+# Data files
 data/
+*.csv
+*.parquet
 
+# Notebooks
 *.ipynb
+.ipynb_checkpoints/
 
+# Database
 *.db
-*.log
 *.sqlite3
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db

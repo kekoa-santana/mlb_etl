@@ -1,8 +1,8 @@
-"""fix primary and constraint key
+"""change innings_pitched to decimal
 
-Revision ID: c3bdd819d2ea
-Revises: 804422e8cd2e
-Create Date: 2026-01-24 19:42:08.878130
+Revision ID: 7d656a0c01d5
+Revises: bf315ab50925
+Create Date: 2026-02-25 11:57:06.879377
 
 """
 from typing import Sequence, Union
@@ -12,15 +12,15 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c3bdd819d2ea'
-down_revision: Union[str, Sequence[str], None] = '804422e8cd2e'
+revision: str = '7d656a0c01d5'
+down_revision: Union[str, Sequence[str], None] = 'bf315ab50925'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
     """Upgrade schema."""
-    pass
+    op.execute('ALTER TABLE staging.pitching_boxscores ALTER COLUMN innings_pitched TYPE REAL')
 
 
 def downgrade() -> None:

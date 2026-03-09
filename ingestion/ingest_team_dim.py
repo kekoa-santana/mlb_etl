@@ -41,7 +41,7 @@ def fetch_team_dim() -> list[int]:
     
     df=pd.DataFrame(team_list)
     
-    engine = create_engine(build_db_url())
+    engine = create_engine(build_db_url(database='mlb_fantasy'))
 
     with engine.begin() as conn:
         df.to_sql('dim_team', conn, 'production', if_exists='replace', index=False)

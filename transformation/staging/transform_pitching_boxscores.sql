@@ -89,7 +89,7 @@ INSERT INTO staging.pitching_boxscores (
     CAST(r.number_of_pitches_text AS SMALLINT),
     CASE
         WHEN TRIM(r.innings_pitched_text) IN ('.---', '-.--') THEN NULL
-        ELSE CAST(r.innings_pitched_text AS NUMERIC(4, 1))
+        ELSE CAST(r.innings_pitched_text AS REAL)
     END,
     CAST(r.wins_text AS SMALLINT),
     CAST(r.losses_text AS SMALLINT),

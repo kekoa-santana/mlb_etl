@@ -5,13 +5,11 @@ from sqlalchemy.engine import URL
 load_dotenv(find_dotenv(), override=False)
 
 def build_db_url(
-    db_user: str='kekoa', 
+    db_user: str='postgres',
     host: str='localhost',
-    port: str='5433',
-    database: None = None
+    port: str='5432',
+    database: str='mlb_fantasy'
     ) -> URL:
-    if database == None:
-        print('Database param needs to be set')
     return URL.create(
         "postgresql+psycopg",
         username=os.getenv("DB_USER", db_user),

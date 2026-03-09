@@ -9,7 +9,7 @@ SQL_PATH = os.path.join(BASE_DIR, "transform_pitching_boxscores.sql")
 with open(SQL_PATH, "r") as f:
     SQL = f.read()
 
-engine = create_engine(build_db_url())
+engine = create_engine(build_db_url(database='mlb_fantasy'))
 
 def main():
     with engine.begin() as conn:

@@ -146,6 +146,3 @@ def apply_table_spec(df: pd.DataFrame, spec: TableSpec) -> tuple[pd.DataFrame, d
 
     report['rows_out'] = int(len(df))
     return df, report
-
-def init_sql_table(spec: TableSpec):
-    engine = create_engine(build_db_url())

@@ -8,10 +8,9 @@ from transformation.staging.transform_load_table import transform_and_load
 from schema.staging.statcast_pitches import STATCAST_PITCHES_SPEC
 from schema.staging.statcast_batted_balls import STATCAST_BATTED_BALLS_SPEC
 from schema.staging.statcast_at_bats import STATCAST_AT_BATS_SPEC
-from schema.production.dim_tables import DIM_PLAYER_SPEC, DIM_TEAM_SPEC, DIM_GAME_SPEC
-from schema.production.sat_tables import SAT_BATTED_BALLS_SPEC, SAT_PITCH_SHAPE_SPEC
+from schema.staging.statcast_sprint_speed import STATCAST_SPRINT_SPEC
+from schema.production.dim_tables import DIM_PLAYER_SPEC
 from transformation.builders.build_at_bats import build_statcast_at_bats
-from transformation.builders.build_dim_game import build_dim_game
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 PARQUET_PATH = os.path.join(BASE_DIR, 'data', 'statcast_pitching_lad_2025-03-18_2025-11-01_f008ac3a-0f27-4843-b345-95059ed956bf.parquet')
@@ -49,13 +48,12 @@ REGISTRY = {
         'source': 'parquet',
         'builder': None
     },
-    'dim_game': {
-        'spec': DIM_GAME_SPEC,
-        'schema': 'production',
-        'table': 'dim_game',
-        'constraint': 'dim_game_pkey',
-        'source': 'staging',
-        'builder': build_dim_game
+    'statcast_sprint_speed': {
+        'spec': STATCAST_SPRINT_SPEC,
+        'schema': 'staging',
+        'table': 'statcast_sprint_speed',
+        'constraint': 'statcast_sprint_speed_pkey',
+        'source': 'parquet'
     }
 }
 
@@ -66,7 +64,8 @@ def load_table(table_key: str, parquet_path: str = None):
     cfg = REGISTRY[table_key]
     source = cfg.get('source', 'parquet')
 
-    engine = create_engine(build_db_url())
+    url = build_db_url()
+    engine = create_engine(url)
 
     builder = cfg.get("builder")
 

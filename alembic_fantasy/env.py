@@ -32,7 +32,7 @@ target_metadata = None
 def get_database_url():
     url=os.getenv('FANTASY_URL')
     if not url:
-        raise RuntimeError('DATABASE_URL environment variable not set')
+        raise RuntimeError('FANTASY_URL environment variable not set')
     return url
 
 def run_migrations_offline() -> None:
