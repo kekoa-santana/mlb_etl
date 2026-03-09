@@ -33,6 +33,10 @@ data/
 
 # Claude Code
 .claude/
+CLAUDE.md
+
+# Personal / drafts
+linkedin_post.md
 
 # OS
 .DS_Store
