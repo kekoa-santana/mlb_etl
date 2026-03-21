@@ -34,7 +34,8 @@ def fetch_team_dim() -> list[int]:
                     'venue': venue.get('name'),
                     'division': division.get('name'),
                     'divsion_id': division.get('id'),
-                    'location': team.get('locationName')
+                    'location': team.get('locationName'),
+                    'league': 'AL' if league.get('id') == 103 else 'NL'
                 })
 
                 team_ids.append(team.get('id'))
@@ -44,6 +45,7 @@ def fetch_team_dim() -> list[int]:
     engine = create_engine(build_db_url(database='mlb_fantasy'))
 
     with engine.begin() as conn:
-        df.to_sql('dim_team', conn, 'production', if_exists='replace', index=False)
+        conn.execute(text("TRUNCATE TABLE production.dim_team"))
+        df.to_sql('dim_team', conn, 'production', if_exists='append', index=False)
 
     return team_ids

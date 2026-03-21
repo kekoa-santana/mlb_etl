@@ -104,6 +104,7 @@ FACT_PA_SPEC = TableSpec(
     unique_constraints=[('uq_fact_pa_natural', ['game_pk', 'game_counter'])]
 )
 
+
 FACT_PITCH_COLS: dict[str, ColumnSpec] = {
     'pitch_id': ColumnSpec(
         name='pitch_id',
@@ -424,6 +425,7 @@ DIM_PARK_FACTOR_SPEC = TableSpec(
     pk=['venue_id', 'season', 'batter_stand'],
     columns=DIM_PARK_FACTOR_COLS,
 )
+
 
 
 # ── dim_umpire ──────────────────────────────────────────────────────

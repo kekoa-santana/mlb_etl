@@ -254,6 +254,24 @@ STATCAST_PITCH_ONLY: dict[str, ColumnSpec] = {
         name='is_foul',
         dtype='Boolean',
         derive=lambda df: df['description'].map(is_foul)
+    ),
+    'delta_run_exp': ColumnSpec(
+        name='delta_run_exp',
+        dtype='REAL'
+    ),
+    'woba_denom': ColumnSpec(
+        name='woba_denom',
+        dtype='SmallInteger',
+        bounds=(0, 1)
+    ),
+    'woba_value': ColumnSpec(
+        name='woba_value',
+        dtype='REAL',
+        bounds=(0, 2.5)
+    ),
+    'fielder_2': ColumnSpec(
+        name='fielder_2',
+        dtype='BigInteger'
     )
 }
 

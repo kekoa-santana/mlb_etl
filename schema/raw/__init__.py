@@ -8,6 +8,10 @@ from schema.raw.boxscores import (
     LANDING_BOXSCORES_SPEC,
     LANDING_BOXSCORES_COLUMNS
 )
+from schema.raw.transactions import (
+    RAW_TRANSACTIONS_SPEC,
+    RAW_TRANSACTIONS_COLS
+)
 
 __all__ = [
     'LANDING_STATCAST_FILES_SPEC',
@@ -16,4 +20,6 @@ __all__ = [
     'PITCHING_BOXSCORES_COLUMNS',
     'LANDING_BOXSCORES_SPEC',
     'LANDING_BOXSCORES_COLUMNS',
+    'RAW_TRANSACTIONS_SPEC',
+    'RAW_TRANSACTIONS_COLS',
 ]

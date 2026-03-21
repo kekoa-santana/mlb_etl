@@ -120,6 +120,11 @@ DIM_TEAM_COLS: dict[str, ColumnSpec] = {
     'location': ColumnSpec(
         name='location',
         dtype='Text'
+    ),
+    'league': ColumnSpec(
+        name='league',
+        dtype='String(2)',
+        nullable=False
     )
 }
 

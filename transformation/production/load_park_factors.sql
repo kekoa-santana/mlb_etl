@@ -18,7 +18,7 @@ venue_season AS (
     FROM production.fact_pa fp
     JOIN production.dim_game g ON g.game_pk = fp.game_pk
     JOIN pa_hand ph ON ph.pa_id = fp.pa_id
-    WHERE g.game_type = 'R'
+    WHERE g.game_type != 'E'
     GROUP BY g.venue_id, g.season, ph.batter_stand
 ),
 lg_season AS (
@@ -63,7 +63,7 @@ venue_names AS (
         ) AS venue_name
     FROM production.dim_game g
     JOIN raw.landing_boxscores lb ON lb.game_pk = g.game_pk
-    WHERE g.game_type = 'R'
+    WHERE g.game_type != 'E'
     ORDER BY g.venue_id, g.season DESC
 )
 SELECT

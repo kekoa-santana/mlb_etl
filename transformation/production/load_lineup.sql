@@ -27,6 +27,7 @@ JOIN production.dim_game g ON g.game_pk = lb.game_pk
 WHERE value->>'battingOrder' IS NOT NULL
   AND (value->>'battingOrder')::int > 0
   AND value->'stats'->'batting' IS NOT NULL
+  AND lb.game_pk NOT IN (SELECT DISTINCT game_pk FROM production.fact_lineup)
 ORDER BY lb.game_pk, (value->'person'->>'id')::bigint,
          -- prefer starter (mod=0) over sub, then lower raw order
          (value->>'battingOrder')::int % 100,

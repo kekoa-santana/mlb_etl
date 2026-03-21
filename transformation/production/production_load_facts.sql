@@ -31,7 +31,7 @@ JOIN staging.statcast_pitches p
     ON p.game_pk = ab.game_pk 
     AND p.game_counter = ab.game_counter 
     AND p.pitch_number = ab.last_pitch_number
-WHERE g.game_type NOT IN ('E', 'S')
+WHERE g.game_type != 'E'
 ON CONFLICT (game_pk, game_counter) DO UPDATE
 SET pitcher_id = EXCLUDED.pitcher_id,
     batter_id = EXCLUDED.batter_id,
@@ -98,7 +98,7 @@ JOIN production.dim_game g
 LEFT JOIN staging.pitching_boxscores pb
     ON p.game_pk = pb.game_pk
     AND p.pitcher = pb.pitcher_id
-WHERE g.game_type NOT IN ('E', 'S')
+WHERE g.game_type != 'E'
 ON CONFLICT (game_pk, game_counter, pitch_number) DO UPDATE
 SET pa_id = EXCLUDED.pa_id,
     pitcher_id = EXCLUDED.pitcher_id,
