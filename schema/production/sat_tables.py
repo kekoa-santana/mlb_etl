@@ -214,6 +214,10 @@ SAT_BATTED_BALLS_COLS: dict[str, ColumnSpec] = {
         name='ideal_contact',
         dtype='Boolean'
     ),
+    'is_barrel': ColumnSpec(
+        name='is_barrel',
+        dtype='Boolean'
+    ),
     'la_band': ColumnSpec(
         name='la_band',
         dtype='Text'
