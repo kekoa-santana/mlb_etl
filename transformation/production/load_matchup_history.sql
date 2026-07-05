@@ -24,7 +24,7 @@ WITH matchup_pa AS (
         MAX(dg.game_date) AS last_matchup_date
     FROM production.fact_pa fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY fp.batter_id, fp.pitcher_id
 ),
 matchup_pitches AS (
@@ -39,7 +39,7 @@ matchup_pitches AS (
         COUNT(*) FILTER (WHERE fpi.zone <= 9 AND fpi.zone IS NOT NULL AND COALESCE(fpi.is_swing, false)) AS zone_swings
     FROM production.fact_pitch fpi
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY fpi.batter_id, fpi.pitcher_id
 ),
 matchup_bb AS (
@@ -49,11 +49,11 @@ matchup_bb AS (
         AVG(sb.launch_speed) AS avg_exit_velo,
         AVG(sb.launch_angle) AS avg_launch_angle,
         AVG(CASE WHEN sb.hard_hit THEN 1.0 ELSE 0.0 END) AS hard_hit_pct,
-        AVG(sb.xwoba) AS xwoba_avg
+        AVG(NULLIF(sb.xwoba, 'NaN'::real)) AS xwoba_avg
     FROM production.fact_pitch fpi
     JOIN production.sat_batted_balls sb ON sb.pitch_id = fpi.pitch_id
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY fpi.batter_id, fpi.pitcher_id
 )
 SELECT

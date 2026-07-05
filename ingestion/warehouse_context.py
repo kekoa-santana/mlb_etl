@@ -155,7 +155,7 @@ def pitch_type_league_xwoba(pitch_type: str, season: int = 2025) -> dict | None:
     sql = """
         SELECT
             COUNT(*) AS total_bip,
-            ROUND(AVG(bb.xwoba)::numeric, 3) AS league_xwoba
+            ROUND(AVG(NULLIF(bb.xwoba, 'NaN'::real))::numeric, 3) AS league_xwoba
         FROM production.sat_batted_balls bb
         JOIN production.fact_pitch fp ON fp.pitch_id = bb.pitch_id
         JOIN production.dim_game g ON g.game_pk = fp.game_pk

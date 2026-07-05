@@ -73,7 +73,7 @@ agg AS (
         ROUND(AVG(p.is_csw::int)::numeric, 4) AS csw_pct,
         ROUND(AVG(p.is_swing::int)::numeric, 4) as swing_rate,
         ROUND(AVG(p.is_whiff::int)::numeric, 4) AS whiff_rate,
-        ROUND(AVG(p.xwoba)::numeric, 4) AS avg_xwoba_on_bip,
+        ROUND(AVG(NULLIF(p.xwoba, 'NaN'::real))::numeric, 4) AS avg_xwoba_on_bip,
         ROUND(AVG(p.hard_hit::int)::numeric, 4) AS hard_hit_rate_on_bip,
         ROUND(AVG(p.sweet_spot::int)::numeric, 4) AS sweet_spot_rate_on_bip
     FROM pitch_level p

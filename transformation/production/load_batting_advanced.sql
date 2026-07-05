@@ -41,6 +41,7 @@ WITH pa_events AS (
         CASE WHEN fp.events NOT IN ('intent_walk','sac_bunt','catcher_interf') THEN 1 ELSE 0 END AS woba_denom
     FROM production.fact_pa fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
+    WHERE dg.game_type = 'R'
 ),
 -- Batted ball quality from statcast
 batter_bip AS (
@@ -51,15 +52,14 @@ batter_bip AS (
         avg(NULLIF(sb.xba, 'NaN'::real))               AS xba,
         avg(NULLIF(sb.xslg, 'NaN'::real))              AS xslg,
         avg(NULLIF(sb.xwoba, 'NaN'::real))             AS xwoba,
-        avg(CASE WHEN sb.launch_speed >= 98
-                  AND sb.launch_angle BETWEEN 26 AND 30
-             THEN 1.0 ELSE 0.0 END)                    AS barrel_pct,
+        avg(sb.is_barrel::int)                          AS barrel_pct,
         avg(sb.hard_hit::int)                           AS hard_hit_pct,
         avg(sb.sweet_spot::int)                         AS sweet_spot_pct
     FROM production.sat_batted_balls sb
     JOIN production.fact_pitch fpi ON fpi.pitch_id = sb.pitch_id
     JOIN production.fact_pa fp ON fp.pa_id = fpi.pa_id
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
+    WHERE dg.game_type = 'R'
     GROUP BY fp.batter_id, dg.season
 ),
 -- League wOBA by season (for wRC+ calculation)
@@ -137,15 +137,15 @@ SELECT
     ps.sf,
     -- rate stats
     ps.hits::real / NULLIF(ps.ab, 0)                           AS avg,
-    (ps.hits + ps.bb + ps.hbp)::real /
-        NULLIF(ps.ab + ps.bb + ps.hbp + ps.sf, 0)             AS obp,
+    (ps.hits + ps.bb + ps.ibb + ps.hbp)::real /
+        NULLIF(ps.ab + ps.bb + ps.ibb + ps.hbp + ps.sf, 0)    AS obp,
     (ps.singles + 2*ps.doubles + 3*ps.triples + 4*ps.hr)::real
         / NULLIF(ps.ab, 0)                                     AS slg,
     (ps.hits::real / NULLIF(ps.ab, 0)) +
-    ((ps.hits + ps.bb + ps.hbp)::real /
-        NULLIF(ps.ab + ps.bb + ps.hbp + ps.sf, 0))            AS ops,
+    ((ps.hits + ps.bb + ps.ibb + ps.hbp)::real /
+        NULLIF(ps.ab + ps.bb + ps.ibb + ps.hbp + ps.sf, 0))   AS ops,
     ps.k::real / NULLIF(ps.pa, 0)                              AS k_pct,
-    ps.bb::real / NULLIF(ps.pa, 0)                             AS bb_pct,
+    (ps.bb + ps.ibb)::real / NULLIF(ps.pa, 0)                  AS bb_pct,
     -- wOBA
     ps.woba,
     -- wRC+ = (((wOBA - lgwOBA) / 1.15 + lgR/PA) / (lgR/PA * PF)) * 100

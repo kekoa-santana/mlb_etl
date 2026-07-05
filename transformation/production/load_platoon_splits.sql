@@ -23,7 +23,7 @@ WITH batter_pa AS (
     FROM production.fact_pa fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
     JOIN production.dim_player dp ON dp.player_id = fp.pitcher_id
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY fp.batter_id, dg.season, CASE WHEN dp.pitch_hand = 'L' THEN 'vLH' ELSE 'vRH' END
 ),
 batter_pitch_agg AS (
@@ -38,7 +38,7 @@ batter_pitch_agg AS (
     FROM production.fact_pitch fpi
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
     JOIN production.dim_player dp ON dp.player_id = fpi.pitcher_id
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY fpi.batter_id, dg.season, CASE WHEN dp.pitch_hand = 'L' THEN 'vLH' ELSE 'vRH' END
 ),
 batter_bb AS (
@@ -48,12 +48,12 @@ batter_bb AS (
         CASE WHEN dp.pitch_hand = 'L' THEN 'vLH' ELSE 'vRH' END AS platoon_side,
         AVG(CASE WHEN sb.hard_hit THEN 1.0 ELSE 0.0 END) AS hard_hit_pct,
         AVG(CASE WHEN sb.sweet_spot THEN 1.0 ELSE 0.0 END) AS sweet_spot_pct,
-        AVG(sb.xwoba) AS xwoba_avg
+        AVG(NULLIF(sb.xwoba, 'NaN'::real)) AS xwoba_avg
     FROM production.fact_pitch fpi
     JOIN production.sat_batted_balls sb ON sb.pitch_id = fpi.pitch_id
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
     JOIN production.dim_player dp ON dp.player_id = fpi.pitcher_id
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY fpi.batter_id, dg.season, CASE WHEN dp.pitch_hand = 'L' THEN 'vLH' ELSE 'vRH' END
 ),
 batter_splits AS (
@@ -107,7 +107,7 @@ pitcher_pa AS (
     FROM production.fact_pa fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
     JOIN production.fact_pitch fpi ON fpi.pa_id = fp.pa_id
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
       AND fpi.batter_stand IS NOT NULL
     GROUP BY fp.pitcher_id, dg.season, CASE WHEN fpi.batter_stand = 'L' THEN 'vLH' ELSE 'vRH' END
 ),
@@ -122,7 +122,7 @@ pitcher_pitch_agg AS (
         COUNT(*) FILTER (WHERE fpi.zone > 9) AS out_of_zone
     FROM production.fact_pitch fpi
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
       AND fpi.batter_stand IS NOT NULL
     GROUP BY fpi.pitcher_id, dg.season, CASE WHEN fpi.batter_stand = 'L' THEN 'vLH' ELSE 'vRH' END
 ),
@@ -133,11 +133,11 @@ pitcher_bb AS (
         CASE WHEN fpi.batter_stand = 'L' THEN 'vLH' ELSE 'vRH' END AS platoon_side,
         AVG(CASE WHEN sb.hard_hit THEN 1.0 ELSE 0.0 END) AS hard_hit_pct,
         AVG(CASE WHEN sb.sweet_spot THEN 1.0 ELSE 0.0 END) AS sweet_spot_pct,
-        AVG(sb.xwoba) AS xwoba_avg
+        AVG(NULLIF(sb.xwoba, 'NaN'::real)) AS xwoba_avg
     FROM production.fact_pitch fpi
     JOIN production.sat_batted_balls sb ON sb.pitch_id = fpi.pitch_id
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
       AND fpi.batter_stand IS NOT NULL
     GROUP BY fpi.pitcher_id, dg.season, CASE WHEN fpi.batter_stand = 'L' THEN 'vLH' ELSE 'vRH' END
 ),

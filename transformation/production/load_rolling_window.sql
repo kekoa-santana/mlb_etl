@@ -31,7 +31,7 @@ WITH batter_games AS (
         SUM(b.hit_by_pitch) AS hbp
     FROM staging.batting_boxscores b
     JOIN production.dim_game dg ON dg.game_pk = b.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY b.batter_id, b.game_pk, dg.game_date, dg.season
 ),
 batter_rolling AS (
@@ -87,7 +87,7 @@ pitcher_games AS (
         SUM(p.batters_faced) AS bf
     FROM staging.pitching_boxscores p
     JOIN production.dim_game dg ON dg.game_pk = p.game_pk
-    WHERE dg.game_type NOT IN ('E', 'S')
+    WHERE dg.game_type = 'R'
     GROUP BY p.pitcher_id, p.game_pk, dg.game_date, dg.season
 ),
 pitcher_rolling AS (

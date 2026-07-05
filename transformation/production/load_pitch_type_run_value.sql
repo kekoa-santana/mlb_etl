@@ -18,6 +18,7 @@ WITH pitcher_totals AS (
         count(*) AS total_pitches
     FROM production.fact_pitch fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
+    WHERE dg.game_type = 'R'
     GROUP BY fp.pitcher_id, dg.season
 ),
 pitch_type_agg AS (
@@ -50,7 +51,7 @@ pitch_type_agg AS (
         avg(fp.pfx_z)                                               AS avg_pfx_z
     FROM production.fact_pitch fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
-    WHERE fp.pitch_type IS NOT NULL
+    WHERE dg.game_type = 'R' AND fp.pitch_type IS NOT NULL
     GROUP BY fp.pitcher_id, dg.season, fp.pitch_type
 ),
 -- Batted ball quality per pitch type
@@ -65,7 +66,7 @@ bip_quality AS (
     FROM production.sat_batted_balls sb
     JOIN production.fact_pitch fpi ON fpi.pitch_id = sb.pitch_id
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
-    WHERE fpi.pitch_type IS NOT NULL
+    WHERE dg.game_type = 'R' AND fpi.pitch_type IS NOT NULL
     GROUP BY fpi.pitcher_id, dg.season, fpi.pitch_type
 )
 SELECT

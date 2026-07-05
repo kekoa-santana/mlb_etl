@@ -23,6 +23,7 @@ WITH pitch_agg AS (
         sum(CASE WHEN fp.zone > 9 AND fp.is_swing THEN 1 ELSE 0 END) AS chase
     FROM production.fact_pitch fp
     JOIN production.dim_game dg ON dg.game_pk = fp.game_pk
+    WHERE dg.game_type = 'R'
     GROUP BY fp.pitcher_id, dg.season
 ),
 pa_outcomes AS (
@@ -32,7 +33,7 @@ pa_outcomes AS (
         count(*)                                                           AS pa_against,
         sum(CASE WHEN pa.events IN ('strikeout','strikeout_double_play')
             THEN 1 ELSE 0 END)                                            AS k_against,
-        sum(CASE WHEN pa.events = 'walk' THEN 1 ELSE 0 END)              AS bb_against,
+        sum(CASE WHEN pa.events IN ('walk','intent_walk') THEN 1 ELSE 0 END) AS bb_against,
         sum(CASE
             WHEN pa.events = 'walk' THEN 0.69
             WHEN pa.events = 'hit_by_pitch' THEN 0.72
@@ -46,6 +47,7 @@ pa_outcomes AS (
                    THEN 1 ELSE 0 END), 0)                                AS woba_against
     FROM production.fact_pa pa
     JOIN production.dim_game dg ON dg.game_pk = pa.game_pk
+    WHERE dg.game_type = 'R'
     GROUP BY pa.pitcher_id, dg.season
 ),
 pitcher_bip AS (
@@ -54,13 +56,12 @@ pitcher_bip AS (
         dg.season,
         count(*)                                                    AS bip_against,
         avg(NULLIF(sb.xwoba, 'NaN'::real))                            AS xwoba_against,
-        avg(CASE WHEN sb.launch_speed >= 98
-                  AND sb.launch_angle BETWEEN 26 AND 30
-             THEN 1.0 ELSE 0.0 END)                                AS barrel_pct_against,
+        avg(sb.is_barrel::int)                                       AS barrel_pct_against,
         avg(sb.hard_hit::int)                                       AS hard_hit_pct_against
     FROM production.sat_batted_balls sb
     JOIN production.fact_pitch fpi ON fpi.pitch_id = sb.pitch_id
     JOIN production.dim_game dg ON dg.game_pk = fpi.game_pk
+    WHERE dg.game_type = 'R'
     GROUP BY fpi.pitcher_id, dg.season
 )
 SELECT

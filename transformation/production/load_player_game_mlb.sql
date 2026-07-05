@@ -51,7 +51,7 @@ SELECT
     NULL, NULL
 FROM staging.batting_boxscores b
 JOIN production.dim_game g ON g.game_pk = b.game_pk
-WHERE g.game_type NOT IN ('E', 'S')
+WHERE g.game_type = 'R'
 GROUP BY b.batter_id, b.game_pk, g.game_date, g.season
 
 UNION ALL
@@ -94,7 +94,7 @@ SELECT
          ELSE NULL END       AS pit_whip
 FROM staging.pitching_boxscores p
 JOIN production.dim_game g ON g.game_pk = p.game_pk
-WHERE g.game_type NOT IN ('E', 'S')
+WHERE g.game_type = 'R'
 
 ON CONFLICT (player_id, game_pk, player_role) DO UPDATE
 SET game_date      = EXCLUDED.game_date,
