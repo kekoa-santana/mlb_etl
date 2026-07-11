@@ -317,7 +317,7 @@ def _apply_api_roster(
             pos = row["position"] if pd.notna(row["position"]) else "UTIL"
             new_players.append({
                 "player_id": pid,
-                "player_name": row["player_name"] or "Unknown",
+                "player_name": row["player_name"] if pd.notna(row["player_name"]) else "Unknown",
                 "org_id": new_org,
                 "roster_status": new_status,
                 "level": new_level,
@@ -661,6 +661,7 @@ def build_roster(season: int, engine=None) -> int:
         # ---- Final cleanup ----
         roster = roster[roster["org_id"].between(108, 158)].copy()
         roster = roster.drop_duplicates("player_id", keep="last")
+        roster["player_name"] = roster["player_name"].fillna("Unknown")
         roster.drop(
             columns=["player_role", "api_position", "status_type",
                      "status_start_date", "mlb_team_name"],
