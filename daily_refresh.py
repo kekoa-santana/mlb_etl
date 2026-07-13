@@ -64,7 +64,7 @@ PYTHON = {
 
 # Precompute groups that change daily and are fast to recompute.
 # Excludes 'models' (heavy MCMC refit) and 'snapshots' (preseason only).
-DAILY_PRECOMPUTE_GROUPS = "team,rankings,game_data,traditional,glicko,profiles,picks"
+DAILY_PRECOMPUTE_GROUPS = "team,rankings,game_data,traditional,profiles,picks"
 
 
 # ---------------------------------------------------------------------------
