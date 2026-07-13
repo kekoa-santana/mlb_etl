@@ -4,7 +4,7 @@ INSERT INTO production.dim_game(
     away_team_wins, away_team_losses, venue_id, doubleheader, 
     day_night, games_in_series, series_in_game_number
 )
-SELECT
+SELECT DISTINCT ON (game_pk)
     game_pk,
     home_team_id,
     away_team_id,

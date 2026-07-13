@@ -5,7 +5,7 @@ INSERT INTO fantasy.espn_pitcher_game_scores (
     "pts_IP", "pts_CG", "pts_SO", "pts_NH", "pts_PG",
     fantasy_points
 )
-SELECT
+SELECT DISTINCT ON (pb.pitcher_id, pb.game_pk)
     pb.pitcher_id,
     pb.game_pk,
     pb.team_id,
